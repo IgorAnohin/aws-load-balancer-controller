@@ -76,6 +76,8 @@ func (h *enqueueRequestsForServiceEvent) enqueueImpactedIngresses(svc *corev1.Se
 		return
 	}
 
+	h.logger.Info("[IAnokhin] enqueueImpactedIngresses to ingEventChain", "ingList", ingList)
+
 	svcKey := k8s.NamespacedName(svc)
 	for index := range ingList.Items {
 		ing := &ingList.Items[index]

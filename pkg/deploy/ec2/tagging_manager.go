@@ -130,6 +130,7 @@ func (m *defaultTaggingManager) ReconcileTags(ctx context.Context, resID string,
 
 func (m *defaultTaggingManager) ListSecurityGroups(ctx context.Context, tagFilters ...tracking.TagFilter) ([]networking.SecurityGroupInfo, error) {
 	sgInfoByID := make(map[string]networking.SecurityGroupInfo)
+	m.logger.Info("[IAnokhin] List Security Groups with filters", "tagFilters", tagFilters)
 	for _, tagFilter := range tagFilters {
 		sgInfoByIDForTagFilter, err := m.listSecurityGroupsWithTagFilter(ctx, tagFilter)
 		if err != nil {

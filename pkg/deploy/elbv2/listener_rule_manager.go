@@ -13,6 +13,7 @@ import (
 	elbv2equality "sigs.k8s.io/aws-load-balancer-controller/pkg/equality/elbv2"
 	elbv2model "sigs.k8s.io/aws-load-balancer-controller/pkg/model/elbv2"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"time"
 )
 
@@ -55,11 +56,13 @@ type defaultListenerRuleManager struct {
 
 func (m *defaultListenerRuleManager) Create(ctx context.Context, resLR *elbv2model.ListenerRule) (elbv2model.ListenerRuleStatus, error) {
 	req, err := buildSDKCreateListenerRuleInput(resLR.Spec, m.featureGates)
+	ctrl.Log.Info("[IAnokhin] buildSDKCreateListenerRuleInput", "req", req)
 	if err != nil {
 		return elbv2model.ListenerRuleStatus{}, err
 	}
 	var ruleTags map[string]string
 	if m.featureGates.Enabled(config.ListenerRulesTagging) {
+		ctrl.Log.Info("[IAnokhin] trackingProvider.ResourceTags")
 		ruleTags = m.trackingProvider.ResourceTags(resLR.Stack(), resLR, resLR.Spec.Tags)
 	}
 	req.Tags = convertTagsToSDKTags(ruleTags)
@@ -70,6 +73,11 @@ func (m *defaultListenerRuleManager) Create(ctx context.Context, resLR *elbv2mod
 	var sdkLR ListenerRuleWithTags
 	if err := runtime.RetryImmediateOnError(m.waitLSExistencePollInterval, m.waitLSExistenceTimeout, isListenerNotFoundError, func() error {
 		resp, err := m.elbv2Client.CreateRuleWithContext(ctx, req)
+
+		m.logger.Info("creating listener rule",
+			"resp", resp,
+			"req", req)
+
 		if err != nil {
 			return err
 		}

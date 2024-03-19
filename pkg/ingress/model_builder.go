@@ -112,6 +112,12 @@ type defaultModelBuilder struct {
 
 // build mode stack for a IngressGroup.
 func (b *defaultModelBuilder) Build(ctx context.Context, ingGroup Group) (core.Stack, *elbv2model.LoadBalancer, []types.NamespacedName, bool, error) {
+	b.logger.Info("[IAnokhin] Building Ingress Load Balancer!!!")
+	b.logger.Info("[IAnokhin] Building Ingress Load Balancer!!!!")
+	b.logger.Info("[IAnokhin] Building Ingress Load Balancer!!!!!")
+	b.logger.Info("[IAnokhin] Building Ingress Load Balancer!!!!!!")
+	b.logger.Info("[IAnokhin] Building Ingress Load Balancer!!!!!!!")
+
 	stack := core.NewDefaultStack(core.StackID(ingGroup.ID))
 	task := &defaultModelBuildTask{
 		k8sClient:                b.k8sClient,

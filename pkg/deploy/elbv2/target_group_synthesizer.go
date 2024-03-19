@@ -42,6 +42,9 @@ type targetGroupSynthesizer struct {
 }
 
 func (s *targetGroupSynthesizer) Synthesize(ctx context.Context) error {
+
+	s.logger.Info("[IAnokhin] Synthesize in targetGroupSynthesizer")
+
 	var resTGs []*elbv2model.TargetGroup
 	s.stack.ListResources(&resTGs)
 	sdkTGs, err := s.findSDKTargetGroups(ctx)
@@ -59,6 +62,8 @@ func (s *targetGroupSynthesizer) Synthesize(ctx context.Context) error {
 	s.unmatchedSDKTGs = unmatchedSDKTGs
 
 	for _, resTG := range unmatchedResTGs {
+		s.logger.Info("[IAnokhin] create Target Group", "resTG", resTG)
+
 		tgStatus, err := s.tgManager.Create(ctx, resTG)
 		if err != nil {
 			return err

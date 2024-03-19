@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/netip"
 	"regexp"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sort"
 	"strconv"
 
@@ -57,7 +58,11 @@ func (t *defaultModelBuildTask) buildLoadBalancerSpec(ctx context.Context, schem
 	if err != nil {
 		return elbv2model.LoadBalancerSpec{}, err
 	}
+
+	ctrl.Log.Info("[IAnokhin] Building LoadBalancer Secutiry Group...")
 	securityGroups, err := t.buildLoadBalancerSecurityGroups(ctx, existingLB, ipAddressType)
+	ctrl.Log.Info("[IAnokhin] Secutiry Groups", "securityGroups", securityGroups)
+
 	if err != nil {
 		return elbv2model.LoadBalancerSpec{}, err
 	}
@@ -92,6 +97,7 @@ func (t *defaultModelBuildTask) buildLoadBalancerSecurityGroups(ctx context.Cont
 		return nil, nil
 	}
 	if !t.featureGates.Enabled(config.NLBSecurityGroup) {
+		ctrl.Log.Info("[IAnokhin] NLBSecurityGroup DISABLED!")
 		if existingLB != nil && len(existingLB.LoadBalancer.SecurityGroups) != 0 {
 			return nil, errors.New("conflicting security groups configuration")
 		}
@@ -100,6 +106,9 @@ func (t *defaultModelBuildTask) buildLoadBalancerSecurityGroups(ctx context.Cont
 	var sgNameOrIDs []string
 	var lbSGTokens []core.StringToken
 	t.annotationParser.ParseStringSliceAnnotation(annotations.SvcLBSuffixLoadBalancerSecurityGroups, &sgNameOrIDs, t.service.Annotations)
+
+	ctrl.Log.Info("[IAnokhin] sgNameOrIDs", "sgNameOrIDs", sgNameOrIDs)
+
 	if len(sgNameOrIDs) == 0 {
 		managedSG, err := t.buildManagedSecurityGroup(ctx, ipAddressType)
 		if err != nil {
@@ -360,6 +369,10 @@ func (t *defaultModelBuildTask) buildLoadBalancerSubnetMappings(_ context.Contex
 }
 
 func (t *defaultModelBuildTask) buildLoadBalancerSubnets(ctx context.Context, scheme elbv2model.LoadBalancerScheme) ([]*ec2sdk.Subnet, error) {
+	var anokhinSetupLog = ctrl.Log.WithName("setup")
+
+	anokhinSetupLog.Info("[IAnokhin] buildLoadBalancerSubnets with schema", "scheme", scheme)
+
 	var rawSubnetNameOrIDs []string
 	if exists := t.annotationParser.ParseStringSliceAnnotation(annotations.SvcLBSuffixSubnets, &rawSubnetNameOrIDs, t.service.Annotations); exists {
 		return t.subnetsResolver.ResolveViaNameOrIDSlice(ctx, rawSubnetNameOrIDs,

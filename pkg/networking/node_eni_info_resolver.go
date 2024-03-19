@@ -112,6 +112,7 @@ func (r *defaultNodeENIInfoResolver) saveENIInfosToCache(nodes []*corev1.Node, e
 
 func (r *defaultNodeENIInfoResolver) resolveViaInstanceID(ctx context.Context, nodes []*corev1.Node) (map[types.NamespacedName]ENIInfo, error) {
 	nodeInstanceByNodeKey, err := r.nodeInfoProvider.FetchNodeInstances(ctx, nodes)
+	r.logger.Info("[IAnokhin] resolveViaInstanceID", "nodeInstanceByNodeKey", nodeInstanceByNodeKey)
 	if err != nil {
 		return nil, err
 	}

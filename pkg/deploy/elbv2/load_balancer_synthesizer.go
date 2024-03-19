@@ -44,14 +44,18 @@ type loadBalancerSynthesizer struct {
 }
 
 func (s *loadBalancerSynthesizer) Synthesize(ctx context.Context) error {
+	s.logger.Info("[IAnokhin] Synthesize load balancers")
 	var resLBs []*elbv2model.LoadBalancer
 	s.stack.ListResources(&resLBs)
 	sdkLBs, err := s.findSDKLoadBalancers(ctx)
+
+	s.logger.Info("[IAnokhin] Synthesize load balancers", "resoureces", resLBs, "sdkLBs", sdkLBs)
 	if err != nil {
 		return err
 	}
 
 	matchedResAndSDKLBs, unmatchedResLBs, unmatchedSDKLBs, err := matchResAndSDKLoadBalancers(resLBs, sdkLBs, s.trackingProvider.ResourceIDTagKey())
+	s.logger.Info("[IAnokhin] Synthesize load balancers matchResAndSDKLoadBalancers")
 	if err != nil {
 		return err
 	}

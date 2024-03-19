@@ -57,6 +57,7 @@ func (p *defaultNodeInfoProvider) FetchNodeInstances(ctx context.Context, nodes 
 		InstanceIds: awssdk.StringSlice(instanceIDs),
 	}
 	instances, err := p.ec2Client.DescribeInstancesAsList(ctx, req)
+	p.logger.Info("[IAnokhin] Describe Instances", "req", req, "resp", instances)
 	if err != nil {
 		return nil, err
 	}

@@ -228,6 +228,7 @@ func (m *defaultTaggingManager) ListListenerRules(ctx context.Context, lsARN str
 		ListenerArn: awssdk.String(lsARN),
 	}
 	rules, err := m.elbv2Client.DescribeRulesAsList(ctx, req)
+	m.logger.Info("[IAnokhin] DescribeRulesAsList", "resp", rules, "req", req)
 	if err != nil {
 		return nil, err
 	}
@@ -241,6 +242,7 @@ func (m *defaultTaggingManager) ListListenerRules(ctx context.Context, lsARN str
 	var tagsByARN map[string]map[string]string
 	if m.featureGates.Enabled(config.ListenerRulesTagging) {
 		tagsByARN, err = m.describeResourceTags(ctx, lrARNs)
+		m.logger.Info("[IAnokhin] describeResourceTags", "resp", tagsByARN, "req", lrARNs)
 		if err != nil {
 			return nil, err
 		}

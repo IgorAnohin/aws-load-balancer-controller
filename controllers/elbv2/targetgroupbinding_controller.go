@@ -106,6 +106,8 @@ func (r *targetGroupBindingReconciler) reconcile(ctx context.Context, req ctrl.R
 }
 
 func (r *targetGroupBindingReconciler) reconcileTargetGroupBinding(ctx context.Context, tgb *elbv2api.TargetGroupBinding) error {
+	r.logger.Info("[IAnokhin] reconcileTargetGroupBinding")
+
 	if err := r.finalizerManager.AddFinalizers(ctx, tgb, targetGroupBindingFinalizer); err != nil {
 		r.eventRecorder.Event(tgb, corev1.EventTypeWarning, k8s.TargetGroupBindingEventReasonFailedAddFinalizer, fmt.Sprintf("Failed add finalizer due to %v", err))
 		return err

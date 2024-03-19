@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"reflect"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/model/core/graph"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // Stack presents a resource graph, where resources can depend on each other.
@@ -52,6 +53,8 @@ func (s *defaultStack) StackID() StackID {
 // Add a resource.
 func (s *defaultStack) AddResource(res Resource) error {
 	resUID := s.computeResourceUID(res)
+	ctrl.Log.Info("[IAnokhin] AddResource", "type", reflect.TypeOf(res), "res", res, "uuid", resUID)
+
 	if _, ok := s.resources[resUID]; ok {
 		return errors.Errorf("resource already exists, type: %v, id: %v", res.Type(), res.ID())
 	}

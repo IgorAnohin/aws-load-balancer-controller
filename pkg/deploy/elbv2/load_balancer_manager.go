@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/deploy/tracking"
 	coremodel "sigs.k8s.io/aws-load-balancer-controller/pkg/model/core"
 	elbv2model "sigs.k8s.io/aws-load-balancer-controller/pkg/model/elbv2"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // LoadBalancerManager is responsible for create/update/delete LoadBalancer resources.
@@ -49,6 +50,7 @@ type defaultLoadBalancerManager struct {
 }
 
 func (m *defaultLoadBalancerManager) Create(ctx context.Context, resLB *elbv2model.LoadBalancer) (elbv2model.LoadBalancerStatus, error) {
+	m.logger.Info("[IAnokhin] Create Load Balancer")
 	req, err := buildSDKCreateLoadBalancerInput(resLB.Spec)
 	if err != nil {
 		return elbv2model.LoadBalancerStatus{}, err
@@ -60,6 +62,8 @@ func (m *defaultLoadBalancerManager) Create(ctx context.Context, resLB *elbv2mod
 		"stackID", resLB.Stack().StackID(),
 		"resourceID", resLB.ID())
 	resp, err := m.elbv2Client.CreateLoadBalancerWithContext(ctx, req)
+	m.logger.Info("[IAnokhin] Create LoadBalancer", "resp", resp, "req", req)
+
 	if err != nil {
 		return elbv2model.LoadBalancerStatus{}, err
 	}
@@ -246,6 +250,8 @@ func buildSDKCreateLoadBalancerInput(lbSpec elbv2model.LoadBalancerSpec) (*elbv2
 	}
 
 	sdkObj.SubnetMappings = buildSDKSubnetMappings(lbSpec.SubnetMappings)
+
+	ctrl.Log.Info("[IAnokhin] buildSDKSecurityGroups", "SecurityGroups", lbSpec.SecurityGroups)
 	if sdkSecurityGroups, err := buildSDKSecurityGroups(lbSpec.SecurityGroups); err != nil {
 		return nil, err
 	} else {

@@ -48,7 +48,10 @@ func (t *defaultModelBuildTask) buildLoadBalancerSpec(ctx context.Context, liste
 	if err != nil {
 		return elbv2model.LoadBalancerSpec{}, err
 	}
+
+	t.logger.Info("[IAnokhin] Building Load Balancer Subnet Mapping with scheme ", scheme, scheme)
 	subnetMappings, err := t.buildLoadBalancerSubnetMappings(ctx, scheme)
+
 	if err != nil {
 		return elbv2model.LoadBalancerSpec{}, err
 	}
@@ -201,6 +204,7 @@ func (t *defaultModelBuildTask) buildLoadBalancerSubnetMappings(ctx context.Cont
 		explicitSubnetNameOrIDsList = append(explicitSubnetNameOrIDsList, rawSubnetNameOrIDs)
 	}
 
+	t.logger.Info("[IAnokhin] explicitSubnetSelectorList is ", "explicitSubnetSelectorList", explicitSubnetSelectorList)
 	if len(explicitSubnetSelectorList) != 0 {
 		if len(explicitSubnetNameOrIDsList) != 0 {
 			return nil, errors.Errorf("conflicting subnet specifications: IngressClassParams versus annotation")
@@ -211,6 +215,7 @@ func (t *defaultModelBuildTask) buildLoadBalancerSubnetMappings(ctx context.Cont
 				return nil, errors.Errorf("conflicting IngressClassParams subnet specifications")
 			}
 		}
+		t.logger.Info("[IAnokhin] ResolveViaSelector", "chosenSubnetSelector", chosenSubnetSelector)
 		chosenSubnets, err := t.subnetsResolver.ResolveViaSelector(ctx, chosenSubnetSelector,
 			networking.WithSubnetsResolveLBType(elbv2model.LoadBalancerTypeApplication),
 			networking.WithSubnetsResolveLBScheme(scheme),

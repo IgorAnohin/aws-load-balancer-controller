@@ -194,6 +194,7 @@ func (m *defaultSecurityGroupManager) clearSGInfosFromCache(sgID string) {
 }
 
 func (m *defaultSecurityGroupManager) fetchSGInfosFromAWS(ctx context.Context, req *ec2sdk.DescribeSecurityGroupsInput) (map[string]SecurityGroupInfo, error) {
+	m.logger.Info("[IAnokhin] fetchSGInfosFromAWS request", "req", req)
 	sgs, err := m.ec2Client.DescribeSecurityGroupsAsList(ctx, req)
 	if err != nil {
 		return nil, err

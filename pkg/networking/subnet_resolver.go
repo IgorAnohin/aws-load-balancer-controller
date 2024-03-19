@@ -145,6 +145,8 @@ type defaultSubnetsResolver struct {
 }
 
 func (r *defaultSubnetsResolver) ResolveViaDiscovery(ctx context.Context, opts ...SubnetsResolveOption) ([]*ec2sdk.Subnet, error) {
+	r.logger.Info("[IAnokhin] ResolveViaDiscovery called", "opts", opts)
+
 	resolveOpts := defaultSubnetsResolveOptions()
 	resolveOpts.ApplyOptions(opts)
 
@@ -167,10 +169,13 @@ func (r *defaultSubnetsResolver) ResolveViaSelector(ctx context.Context, selecto
 	resolveOpts := defaultSubnetsResolveOptions()
 	resolveOpts.ApplyOptions(opts)
 
+	r.logger.Info("[IAnokhin] ResolveViaSelector called", "selector", selector, "opts", resolveOpts)
+
 	var chosenSubnets []*ec2sdk.Subnet
 	var err error
 	var explanation string
 	if selector.IDs != nil {
+		r.logger.Info("[IAnokhin] Selector Ids is not nul", "selectorIDs", selector.IDs)
 		req := &ec2sdk.DescribeSubnetsInput{
 			SubnetIds: make([]*string, 0, len(selector.IDs)),
 		}
@@ -212,7 +217,10 @@ func (r *defaultSubnetsResolver) ResolveViaSelector(ctx context.Context, selecto
 		if err != nil {
 			return nil, err
 		}
-		explanation = fmt.Sprintf("%d match VPC and tags: %s", len(allSubnets), targetTagKeys)
+		//explanation = fmt.Sprintf("%d match VPC and tags: %s", len(allSubnets), targetTagKeys)
+		explanation = fmt.Sprintf("%d match VPC and tags:", len(allSubnets))
+
+		r.logger.Info("[IAnokhin] DescribeSubnets response", "Request", req, "allSubnets", allSubnets)
 
 		var subnets []*ec2sdk.Subnet
 		taggedOtherCluster := 0
@@ -315,7 +323,7 @@ func (r *defaultSubnetsResolver) ResolveViaNameOrIDSlice(ctx context.Context, su
 		return nil, errors.Errorf("couldn't find all subnets, nameOrIDs: %v, found: %v", subnetNameOrIDs, len(resolvedSubnets))
 	}
 	if len(resolvedSubnets) == 0 {
-		return nil, errors.New("unable to resolve at least one subnet")
+		return nil, errors.Errorf("unable to resolve at least one subnet, nameOrIDs: %v", subnetNameOrIDs)
 	}
 	if err := r.validateSubnetsAZExclusivity(resolvedSubnets); err != nil {
 		return nil, err

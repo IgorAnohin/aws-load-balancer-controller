@@ -157,6 +157,7 @@ func (t *defaultModelBuildTask) buildTargetGroupSpec(ctx context.Context,
 		return elbv2model.TargetGroupSpec{}, err
 	}
 	tgAttributes, err := t.buildTargetGroupAttributes(ctx, svcAndIngAnnotations)
+	t.logger.Info("[IAnokhin] target group attributes", "tgAttributes", tgAttributes)
 	if err != nil {
 		return elbv2model.TargetGroupSpec{}, err
 	}

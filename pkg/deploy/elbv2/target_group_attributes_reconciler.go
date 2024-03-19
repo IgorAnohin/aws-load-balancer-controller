@@ -34,13 +34,18 @@ type defaultTargetGroupAttributeReconciler struct {
 }
 
 func (r *defaultTargetGroupAttributeReconciler) Reconcile(ctx context.Context, resTG *elbv2model.TargetGroup, sdkTG TargetGroupWithTags) error {
+	r.logger.Info("[IAnokhin] Reconcile in defaultTargetGroupAttributeReconciler")
+
 	desiredAttrs := r.getDesiredTargetGroupAttributes(ctx, resTG)
+
+	r.logger.Info("[IAnokhin] Reconcile in getDesiredTargetGroupAttributes", "DesiredAttributes", desiredAttrs)
 	currentAttrs, err := r.getCurrentTargetGroupAttributes(ctx, sdkTG)
 	if err != nil {
 		return err
 	}
 
 	attributesToUpdate, _ := algorithm.DiffStringMap(desiredAttrs, currentAttrs)
+	r.logger.Info("[IAnokhin] Reconcile in attributesToUpdate")
 	if len(attributesToUpdate) > 0 {
 		req := &elbv2sdk.ModifyTargetGroupAttributesInput{
 			TargetGroupArn: sdkTG.TargetGroup.TargetGroupArn,
@@ -83,6 +88,9 @@ func (r *defaultTargetGroupAttributeReconciler) getCurrentTargetGroupAttributes(
 	}
 
 	resp, err := r.elbv2Client.DescribeTargetGroupAttributesWithContext(ctx, req)
+
+	r.logger.Info("[IAnokhin] elbv2Client.DescribeTargetGroupAttributesWithContext", "resp", resp, "req", req, "err", err)
+
 	if err != nil {
 		return nil, err
 	}

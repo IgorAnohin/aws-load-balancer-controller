@@ -8,6 +8,7 @@ import (
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/aws/services"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/model/core"
 	elbv2model "sigs.k8s.io/aws-load-balancer-controller/pkg/model/elbv2"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
 )
 
@@ -35,14 +36,18 @@ type listenerRuleSynthesizer struct {
 func (s *listenerRuleSynthesizer) Synthesize(ctx context.Context) error {
 	var resLRs []*elbv2model.ListenerRule
 	s.stack.ListResources(&resLRs)
+
+	ctrl.Log.Info("[IAnokhin] Listener rules", "resLRs", resLRs)
 	resLRsByLSARN, err := mapResListenerRuleByListenerARN(resLRs)
+	ctrl.Log.Info("[IAnokhin] mapResListenerRuleByListenerARN", "resLRsByLSARN", resLRsByLSARN)
 	if err != nil {
 		return err
 	}
 
 	var resLSs []*elbv2model.Listener
 	s.stack.ListResources(&resLSs)
-	for _, resLS := range resLSs {
+	for index, resLS := range resLSs {
+		ctrl.Log.Info("[IAnokhin] resolve resLS", "index", index, "resLS", resLS)
 		lsARN, err := resLS.ListenerARN().Resolve(ctx)
 		if err != nil {
 			return err
@@ -62,17 +67,20 @@ func (s *listenerRuleSynthesizer) PostSynthesize(ctx context.Context) error {
 
 func (s *listenerRuleSynthesizer) synthesizeListenerRulesOnListener(ctx context.Context, lsARN string, resLRs []*elbv2model.ListenerRule) error {
 	sdkLRs, err := s.findSDKListenersRulesOnLS(ctx, lsARN)
+	ctrl.Log.Info("[IAnokhin] findSDKListenersRulesOnLS", "sdkLRs", sdkLRs)
 	if err != nil {
 		return err
 	}
 
 	matchedResAndSDKLRs, unmatchedResLRs, unmatchedSDKLRs := matchResAndSDKListenerRules(resLRs, sdkLRs)
+	ctrl.Log.Info("[IAnokhin] matchResAndSDKListenerRules", "sdkLRs", sdkLRs, "resLRs", resLRs)
 	for _, sdkLR := range unmatchedSDKLRs {
 		if err := s.lrManager.Delete(ctx, sdkLR); err != nil {
 			return err
 		}
 	}
-	for _, resLR := range unmatchedResLRs {
+	for index, resLR := range unmatchedResLRs {
+		ctrl.Log.Info("[IAnokhin] lrManager.Create", "index", index, "sdkLRs", resLR)
 		lrStatus, err := s.lrManager.Create(ctx, resLR)
 		if err != nil {
 			return err
@@ -91,6 +99,7 @@ func (s *listenerRuleSynthesizer) synthesizeListenerRulesOnListener(ctx context.
 
 // findSDKListenersRulesOnLS returns the listenerRules configured on Listener.
 func (s *listenerRuleSynthesizer) findSDKListenersRulesOnLS(ctx context.Context, lsARN string) ([]ListenerRuleWithTags, error) {
+	ctrl.Log.Info("[IAnokhin] taggingManager.ListListenerRules", "lsARN", lsARN)
 	sdkLRs, err := s.taggingManager.ListListenerRules(ctx, lsARN)
 	if err != nil {
 		return nil, err
@@ -157,7 +166,8 @@ func mapSDKListenerRuleByPriority(sdkLRs []ListenerRuleWithTags) map[int64]Liste
 func mapResListenerRuleByListenerARN(resLRs []*elbv2model.ListenerRule) (map[string][]*elbv2model.ListenerRule, error) {
 	resLRsByLSARN := make(map[string][]*elbv2model.ListenerRule, len(resLRs))
 	ctx := context.Background()
-	for _, lr := range resLRs {
+	for index, lr := range resLRs {
+		ctrl.Log.Info("[IAnokhin] reslolve LR", "index", index, "lr", lr)
 		lsARN, err := lr.Spec.ListenerARN.Resolve(ctx)
 		if err != nil {
 			return nil, err

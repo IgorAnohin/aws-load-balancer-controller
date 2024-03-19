@@ -73,6 +73,11 @@ func (m *defaultListenerManager) Create(ctx context.Context, resLS *elbv2model.L
 		"stackID", resLS.Stack().StackID(),
 		"resourceID", resLS.ID())
 	resp, err := m.elbv2Client.CreateListenerWithContext(ctx, req)
+
+	m.logger.Info("[IAnokhin] Creating Listener",
+		"resp", resp,
+		"req", req)
+
 	if err != nil {
 		return elbv2model.ListenerStatus{}, err
 	}
@@ -284,11 +289,15 @@ func buildSDKCreateListenerInput(lsSpec elbv2model.ListenerSpec, featureGates co
 	sdkObj.LoadBalancerArn = awssdk.String(lbARN)
 	sdkObj.Port = awssdk.Int64(lsSpec.Port)
 	sdkObj.Protocol = awssdk.String(string(lsSpec.Protocol))
+
 	defaultActions, err := buildSDKActions(lsSpec.DefaultActions, featureGates)
 	if err != nil {
 		return nil, err
 	}
+
 	sdkObj.DefaultActions = defaultActions
+
+	// Unknown fields for C2
 	sdkObj.Certificates, _ = buildSDKCertificates(lsSpec.Certificates)
 	sdkObj.SslPolicy = lsSpec.SSLPolicy
 	if len(lsSpec.ALPNPolicy) != 0 {

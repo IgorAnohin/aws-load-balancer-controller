@@ -63,6 +63,9 @@ type defaultSecurityGroupManager struct {
 func (m *defaultSecurityGroupManager) Create(ctx context.Context, resSG *ec2model.SecurityGroup) (ec2model.SecurityGroupStatus, error) {
 	sgTags := m.trackingProvider.ResourceTags(resSG.Stack(), resSG, resSG.Spec.Tags)
 	sdkTags := convertTagsToSDKTags(sgTags)
+
+	m.logger.Info("[IAnokhin] create secutiry group with tags", "sgtags", sgTags, "sdkTags", sdkTags)
+
 	permissionInfos, err := buildIPPermissionInfos(resSG.Spec.Ingress)
 	if err != nil {
 		return ec2model.SecurityGroupStatus{}, err
@@ -80,7 +83,7 @@ func (m *defaultSecurityGroupManager) Create(ctx context.Context, resSG *ec2mode
 		},
 	}
 	m.logger.Info("creating securityGroup",
-		"resourceID", resSG.ID())
+		"resourceID", resSG.ID(), "Input", req)
 	resp, err := m.ec2Client.CreateSecurityGroupWithContext(ctx, req)
 	if err != nil {
 		return ec2model.SecurityGroupStatus{}, err

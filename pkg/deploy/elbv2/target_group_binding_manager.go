@@ -81,6 +81,7 @@ func (m *defaultTargetGroupBindingManager) Create(ctx context.Context, resTGB *e
 	m.logger.Info("creating targetGroupBinding",
 		"stackID", resTGB.Stack().StackID(),
 		"resourceID", resTGB.ID())
+	m.logger.Info("[IAnokhin] Create targetGroupBinding", "req", k8sTGB)
 	if err := m.k8sClient.Create(ctx, k8sTGB); err != nil {
 		return elbv2model.TargetGroupBindingResourceStatus{}, err
 	}

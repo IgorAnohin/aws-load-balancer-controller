@@ -124,6 +124,7 @@ func (m *defaultNetworkingManager) Cleanup(ctx context.Context, tgb *elbv2api.Ta
 }
 
 func (m *defaultNetworkingManager) computeIngressPermissionsPerSGWithPodEndpoints(ctx context.Context, tgbNetworking elbv2api.TargetGroupBindingNetworking, endpoints []backend.PodEndpoint) (map[string][]networking.IPPermissionInfo, error) {
+	m.logger.Info("[IAnokhin] Pod Endpoints computeIngressPermissionsPerSGWithPodEndpoints")
 	pods := make([]k8s.PodInfo, 0, len(endpoints))
 	podByPodKey := make(map[types.NamespacedName]k8s.PodInfo, len(endpoints))
 	for _, endpoint := range endpoints {
@@ -157,6 +158,7 @@ func (m *defaultNetworkingManager) computeIngressPermissionsPerSGWithPodEndpoint
 }
 
 func (m *defaultNetworkingManager) computeIngressPermissionsPerSGWithNodePortEndpoints(ctx context.Context, tgbNetworking elbv2api.TargetGroupBindingNetworking, endpoints []backend.NodePortEndpoint) (map[string][]networking.IPPermissionInfo, error) {
+	m.logger.Info("[IAnokhin] Node Port Endpoints computeIngressPermissionsPerSGWithNodePortEndpoints")
 	nodes := make([]*corev1.Node, 0, len(endpoints))
 	for _, endpoint := range endpoints {
 		nodes = append(nodes, endpoint.Node)

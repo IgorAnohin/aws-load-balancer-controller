@@ -35,6 +35,7 @@ type defaultLoadBalancerAttributeReconciler struct {
 
 func (r *defaultLoadBalancerAttributeReconciler) Reconcile(ctx context.Context, resLB *elbv2model.LoadBalancer, sdkLB LoadBalancerWithTags) error {
 	desiredAttrs := r.getDesiredLoadBalancerAttributes(ctx, resLB)
+	r.logger.Info("[IAnokhin] Reconcile Load balancer attributes", "desiredAttrs", desiredAttrs)
 	currentAttrs, err := r.getCurrentLoadBalancerAttributes(ctx, sdkLB)
 	if err != nil {
 		return err

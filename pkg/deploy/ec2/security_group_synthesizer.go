@@ -46,6 +46,8 @@ func (s *securityGroupSynthesizer) Synthesize(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	s.logger.Info("[IAnokhin] Found the following security groups in list", "list", resSGs, "resSGs", sdkSGs)
 	matchedResAndSDKSGs, unmatchedResSGs, unmatchedSDKSGs, err := matchResAndSDKSecurityGroups(resSGs, sdkSGs, s.trackingProvider.ResourceIDTagKey())
 	if err != nil {
 		return err
@@ -55,6 +57,7 @@ func (s *securityGroupSynthesizer) Synthesize(ctx context.Context) error {
 	s.unmatchedSDKSGs = unmatchedSDKSGs
 
 	for _, resSG := range unmatchedResSGs {
+		s.logger.Info("[IAnokhin] Creating security group", "resSG", resSG)
 		sgStatus, err := s.sgManager.Create(ctx, resSG)
 		if err != nil {
 			return err
@@ -142,7 +145,7 @@ func mapSDKSecurityGroupByResourceID(sdkSGs []networking.SecurityGroupInfo, reso
 	for _, sdkSG := range sdkSGs {
 		resourceID, ok := sdkSG.Tags[resourceIDTagKey]
 		if !ok {
-			return nil, errors.Errorf("unexpected securityGroup with no resourceID: %v", sdkSG.SecurityGroupID)
+			return nil, errors.Errorf("unexpected securityGroup with no resourceID: %v with key %s", sdkSG.SecurityGroupID, resourceIDTagKey)
 		}
 		sdkSGsByID[resourceID] = append(sdkSGsByID[resourceID], sdkSG)
 	}

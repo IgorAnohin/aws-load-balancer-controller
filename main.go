@@ -18,6 +18,7 @@ package main
 
 import (
 	"os"
+	"sigs.k8s.io/aws-load-balancer-controller/controllers/ingress"
 	elbv2deploy "sigs.k8s.io/aws-load-balancer-controller/pkg/deploy/elbv2"
 
 	"github.com/go-logr/logr"
@@ -29,7 +30,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	elbv2api "sigs.k8s.io/aws-load-balancer-controller/apis/elbv2/v1beta1"
 	elbv2controller "sigs.k8s.io/aws-load-balancer-controller/controllers/elbv2"
-	"sigs.k8s.io/aws-load-balancer-controller/controllers/ingress"
 	"sigs.k8s.io/aws-load-balancer-controller/controllers/service"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/aws"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/aws/throttle"
@@ -68,6 +68,7 @@ func main() {
 		"GitVersion", version.GitVersion,
 		"GitCommit", version.GitCommit,
 		"BuildDate", version.BuildDate,
+		"FromIAnokhin",
 	)
 	controllerCFG, err := loadControllerConfig()
 	if err != nil {
@@ -114,9 +115,13 @@ func main() {
 		cloud.VpcID(), cloud.EC2(), mgr.GetClient(), controllerCFG.DefaultTags, ctrl.Log.WithName("backend-sg-provider"))
 	sgResolver := networking.NewDefaultSecurityGroupResolver(cloud.EC2(), cloud.VpcID())
 	elbv2TaggingManager := elbv2deploy.NewDefaultTaggingManager(cloud.ELBV2(), cloud.VpcID(), controllerCFG.FeatureGates, cloud.RGT(), ctrl.Log)
+
+	setupLog.Info("[IAnokhin] Building ingress Group Reconciler...")
 	ingGroupReconciler := ingress.NewGroupReconciler(cloud, mgr.GetClient(), mgr.GetEventRecorderFor("ingress"),
 		finalizerManager, sgManager, sgReconciler, subnetResolver, elbv2TaggingManager,
 		controllerCFG, backendSGProvider, sgResolver, ctrl.Log.WithName("controllers").WithName("ingress"))
+
+	setupLog.Info("[IAnokhin] Building service Reconciler...")
 	svcReconciler := service.NewServiceReconciler(cloud, mgr.GetClient(), mgr.GetEventRecorderFor("service"),
 		finalizerManager, sgManager, sgReconciler, subnetResolver, vpcInfoProvider, elbv2TaggingManager,
 		controllerCFG, backendSGProvider, sgResolver, ctrl.Log.WithName("controllers").WithName("service"))
@@ -132,10 +137,13 @@ func main() {
 
 	// Setup service reconciler only if AllowServiceType is set to true.
 	if controllerCFG.FeatureGates.Enabled(config.EnableServiceController) {
+		setupLog.Info("[IAnokhin] Settting up service reconciler")
 		if err = svcReconciler.SetupWithManager(ctx, mgr); err != nil {
 			setupLog.Error(err, "Unable to create controller", "controller", "Service")
 			os.Exit(1)
 		}
+	} else {
+		setupLog.Info("[IAnokhin] config.EnableServiceController disable!")
 	}
 
 	if err := tgbReconciler.SetupWithManager(ctx, mgr); err != nil {

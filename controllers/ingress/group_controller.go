@@ -119,6 +119,7 @@ func (r *groupReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 }
 
 func (r *groupReconciler) reconcile(ctx context.Context, req ctrl.Request) error {
+	r.logger.Info("[IAnokhin] reconcile group controller with Ingress Group")
 	ingGroupID := ingress.DecodeGroupIDFromReconcileRequest(req)
 	ingGroup, err := r.groupLoader.Load(ctx, ingGroupID)
 	if err != nil {
@@ -288,10 +289,13 @@ func (r *groupReconciler) setupWatches(_ context.Context, c controller.Controlle
 	secretEventsChan := make(chan event.GenericEvent)
 	ingEventHandler := eventhandlers.NewEnqueueRequestsForIngressEvent(r.groupLoader, r.eventRecorder,
 		r.logger.WithName("eventHandlers").WithName("ingress"))
+
+	r.logger.Info("[IAnokhin] Setting up services event handler in ingress package")
 	svcEventHandler := eventhandlers.NewEnqueueRequestsForServiceEvent(ingEventChan, r.k8sClient, r.eventRecorder,
 		r.logger.WithName("eventHandlers").WithName("service"))
 	secretEventHandler := eventhandlers.NewEnqueueRequestsForSecretEvent(ingEventChan, svcEventChan, r.k8sClient, r.eventRecorder,
 		r.logger.WithName("eventHandlers").WithName("secret"))
+
 	if err := c.Watch(&source.Channel{Source: ingEventChan}, ingEventHandler); err != nil {
 		return err
 	}

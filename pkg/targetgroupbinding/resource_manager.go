@@ -82,6 +82,8 @@ type defaultResourceManager struct {
 }
 
 func (m *defaultResourceManager) Reconcile(ctx context.Context, tgb *elbv2api.TargetGroupBinding) error {
+
+	m.logger.Info("[IAnokhin] Reconcile Resource manager", "TargetType", tgb.Spec.TargetType)
 	if tgb.Spec.TargetType == nil {
 		return errors.Errorf("targetType is not specified: %v", k8s.NamespacedName(tgb).String())
 	}
@@ -105,6 +107,7 @@ func (m *defaultResourceManager) Cleanup(ctx context.Context, tgb *elbv2api.Targ
 }
 
 func (m *defaultResourceManager) reconcileWithIPTargetType(ctx context.Context, tgb *elbv2api.TargetGroupBinding) error {
+	m.logger.Info("[IAnokhin] IP Target reconcileWithIPTargetType")
 	svcKey := buildServiceReferenceKey(tgb, tgb.Spec.ServiceRef)
 
 	targetHealthCondType := BuildTargetHealthPodConditionType(tgb)
@@ -175,6 +178,7 @@ func (m *defaultResourceManager) reconcileWithIPTargetType(ctx context.Context, 
 }
 
 func (m *defaultResourceManager) reconcileWithInstanceTargetType(ctx context.Context, tgb *elbv2api.TargetGroupBinding) error {
+	m.logger.Info("[IAnokhin] Instance Target reconcileWithInstanceTargetType")
 	svcKey := buildServiceReferenceKey(tgb, tgb.Spec.ServiceRef)
 	nodeSelector, err := backend.GetTrafficProxyNodeSelector(tgb)
 	if err != nil {

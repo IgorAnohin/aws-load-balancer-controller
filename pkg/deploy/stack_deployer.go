@@ -3,6 +3,7 @@ package deploy
 import (
 	"context"
 	"github.com/go-logr/logr"
+	"reflect"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/aws"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/config"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/deploy/ec2"
@@ -109,12 +110,14 @@ func (d *defaultStackDeployer) Deploy(ctx context.Context, stack core.Stack) err
 		}
 	}
 
-	for _, synthesizer := range synthesizers {
+	for index, synthesizer := range synthesizers {
+		d.logger.Info("[IAnokhin] Synthesize", "index", index, "synthesizer", reflect.TypeOf(synthesizer))
 		if err := synthesizer.Synthesize(ctx); err != nil {
 			return err
 		}
 	}
 	for i := len(synthesizers) - 1; i >= 0; i-- {
+		d.logger.Info("[IAnokhin] PostSynthesize", "index", i, "synthesizer", reflect.TypeOf(synthesizers[i]))
 		if err := synthesizers[i].PostSynthesize(ctx); err != nil {
 			return err
 		}
