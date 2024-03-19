@@ -2,7 +2,8 @@
 ARG BASE_IMAGE
 ARG BUILD_IMAGE
 
-FROM --platform=${TARGETPLATFORM} $BUILD_IMAGE AS base
+# FROM --platform=${TARGETPLATFORM} $BUILD_IMAGE AS base
+FROM $BUILD_IMAGE AS base
 WORKDIR /workspace
 # Copy the Go Modules manifests
 COPY go.mod go.mod
