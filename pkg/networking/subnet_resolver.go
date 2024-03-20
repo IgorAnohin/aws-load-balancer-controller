@@ -204,14 +204,15 @@ func (r *defaultSubnetsResolver) ResolveViaSelector(ctx context.Context, selecto
 			},
 		}
 
-		targetTagKeys := []string{}
-		for key, values := range selector.Tags {
-			targetTagKeys = append(targetTagKeys, key)
-			req.Filters = append(req.Filters, &ec2sdk.Filter{
-				Name:   awssdk.String("tag:" + key),
-				Values: awssdk.StringSlice(values),
-			})
-		}
+		// NOTE: Additional Tags should be added to K8S VPC. Quick Fix possible
+		//targetTagKeys := []string{}
+		//for key, values := range selector.Tags {
+		//	targetTagKeys = append(targetTagKeys, key)
+		//	req.Filters = append(req.Filters, &ec2sdk.Filter{
+		//		Name:   awssdk.String("tag:" + key),
+		//		Values: awssdk.StringSlice(values),
+		//	})
+		//}
 
 		allSubnets, err := r.ec2Client.DescribeSubnetsAsList(ctx, req)
 		if err != nil {
@@ -264,13 +265,14 @@ func (r *defaultSubnetsResolver) ResolveViaSelector(ctx context.Context, selecto
 	if len(chosenSubnets) == 0 {
 		return nil, fmt.Errorf("unable to resolve at least one subnet (%s)", explanation)
 	}
-	subnetLocale, err := r.validateSubnetsLocaleUniformity(ctx, chosenSubnets)
-	if err != nil {
-		return nil, err
-	}
-	if err := r.validateSubnetsMinimalCount(chosenSubnets, subnetLocale, resolveOpts); err != nil {
-		return nil, err
-	}
+	// NOTE: FetchAZInfos doesn't supported by CROC Cloud. Quick Fix possible
+	//subnetLocale, err := r.validateSubnetsLocaleUniformity(ctx, chosenSubnets)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if err := r.validateSubnetsMinimalCount(chosenSubnets, subnetLocale, resolveOpts); err != nil {
+	//	return nil, err
+	//}
 	sortSubnetsByID(chosenSubnets)
 	return chosenSubnets, nil
 }
@@ -328,13 +330,14 @@ func (r *defaultSubnetsResolver) ResolveViaNameOrIDSlice(ctx context.Context, su
 	if err := r.validateSubnetsAZExclusivity(resolvedSubnets); err != nil {
 		return nil, err
 	}
-	subnetLocale, err := r.validateSubnetsLocaleUniformity(ctx, resolvedSubnets)
-	if err != nil {
-		return nil, err
-	}
-	if err := r.validateSubnetsMinimalCount(resolvedSubnets, subnetLocale, resolveOpts); err != nil {
-		return nil, err
-	}
+	// NOTE: FetchAZInfos doesn't supported by CROC Cloud. Quick Fix possible
+	//subnetLocale, err := r.validateSubnetsLocaleUniformity(ctx, resolvedSubnets)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if err := r.validateSubnetsMinimalCount(resolvedSubnets, subnetLocale, resolveOpts); err != nil {
+	//	return nil, err
+	//}
 	sortSubnetsByID(resolvedSubnets)
 	return resolvedSubnets, nil
 }

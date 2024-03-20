@@ -83,9 +83,10 @@ func (m *defaultTargetGroupManager) Create(ctx context.Context, resTG *elbv2mode
 		"stackID", resTG.Stack().StackID(),
 		"resourceID", resTG.ID(),
 		"arn", awssdk.StringValue(sdkTG.TargetGroup.TargetGroupArn))
-	if err := m.attributesReconciler.Reconcile(ctx, resTG, sdkTG); err != nil {
-		return elbv2model.TargetGroupStatus{}, err
-	}
+	// NOTE: TargetGroupAttributes doesnt supported by CROC Cloud
+	//if err := m.attributesReconciler.Reconcile(ctx, resTG, sdkTG); err != nil {
+	//	return elbv2model.TargetGroupStatus{}, err
+	//}
 
 	return buildResTargetGroupStatus(sdkTG), nil
 }
@@ -97,9 +98,10 @@ func (m *defaultTargetGroupManager) Update(ctx context.Context, resTG *elbv2mode
 	if err := m.updateSDKTargetGroupWithHealthCheck(ctx, resTG, sdkTG); err != nil {
 		return elbv2model.TargetGroupStatus{}, err
 	}
-	if err := m.attributesReconciler.Reconcile(ctx, resTG, sdkTG); err != nil {
-		return elbv2model.TargetGroupStatus{}, err
-	}
+	// NOTE: TargetGroupAttributes doesnt supported by CROC Cloud
+	//if err := m.attributesReconciler.Reconcile(ctx, resTG, sdkTG); err != nil {
+	//	return elbv2model.TargetGroupStatus{}, err
+	//}
 
 	return buildResTargetGroupStatus(sdkTG), nil
 }

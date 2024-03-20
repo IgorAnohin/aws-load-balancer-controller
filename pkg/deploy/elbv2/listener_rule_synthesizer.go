@@ -53,9 +53,11 @@ func (s *listenerRuleSynthesizer) Synthesize(ctx context.Context) error {
 			return err
 		}
 		resLRs := resLRsByLSARN[lsARN]
-		if err := s.synthesizeListenerRulesOnListener(ctx, lsARN, resLRs); err != nil {
-			return err
-		}
+		ctrl.Log.Info("[IAnokhin] synthesizeListenerRulesOnListener", "index", index, "resLS", resLS, "resLRs", resLRs)
+		// NOTE: Listener Rule API doesnt support in CROC Cloud
+		//if err := s.synthesizeListenerRulesOnListener(ctx, lsARN, resLRs); err != nil {
+		//	return err
+		//}
 	}
 	return nil
 }

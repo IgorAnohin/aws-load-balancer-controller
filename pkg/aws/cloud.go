@@ -1,9 +1,12 @@
 package aws
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -90,6 +93,23 @@ func NewCloud(cfg CloudConfig, metricsRegisterer prometheus.Registerer) (Cloud, 
 		cfg.Region = region
 	}
 	awsCFG := aws.NewConfig().WithRegion(cfg.Region).WithSTSRegionalEndpoint(endpoints.RegionalSTSEndpoint).WithMaxRetries(cfg.MaxRetries).WithEndpointResolver(endpointsResolver)
+
+	envEndpointInsecure := os.Getenv("AWS_ENDPOINT_UNSECURE")
+	isEndpointInsecure := false
+	if envEndpointInsecure != "" {
+		var err error
+		isEndpointInsecure, err = strconv.ParseBool(envEndpointInsecure)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to parse environment variable AWS_ENDPOINT_UNSECURE: %v", err)
+		}
+	}
+
+	if isEndpointInsecure {
+		tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+		client := &http.Client{Transport: tr}
+		awsCFG = awsCFG.WithHTTPClient(client)
+	}
+
 	opts = session.Options{}
 	opts.Config.MergeIn(awsCFG)
 	if !hasIPv4 {
