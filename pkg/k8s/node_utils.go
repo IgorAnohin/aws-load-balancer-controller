@@ -23,6 +23,11 @@ func GetNodeCondition(node *corev1.Node, conditionType corev1.NodeConditionType)
 func ExtractNodeInstanceID(node *corev1.Node) (string, error) {
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
+		// If providerID is not specified, try to extract instanceID from node.Name
+		instanceID, found := extractInstanceIDFromName(node.Name)
+		if found {
+			return instanceID, nil
+		}
 		return "", errors.Errorf("providerID is not specified for node: %s", node.Name)
 	}
 
@@ -32,4 +37,13 @@ func ExtractNodeInstanceID(node *corev1.Node) (string, error) {
 		return "", errors.Errorf("providerID %s is invalid for EC2 instances, node: %s", providerID, node.Name)
 	}
 	return instanceID, nil
+}
+
+func extractInstanceIDFromName(s string) (string, bool) {
+	// Regular expression for an 8-character hexadecimal string at the end of the string
+	re := regexp.MustCompile(`-[a-f0-9]{8}$`)
+	if re.MatchString(s) {
+		return "i" + re.FindString(s), true
+	}
+	return "", false
 }

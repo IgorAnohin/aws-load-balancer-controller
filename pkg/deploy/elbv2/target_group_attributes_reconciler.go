@@ -35,10 +35,13 @@ type defaultTargetGroupAttributeReconciler struct {
 
 func (r *defaultTargetGroupAttributeReconciler) Reconcile(ctx context.Context, resTG *elbv2model.TargetGroup, sdkTG TargetGroupWithTags) error {
 	desiredAttrs := r.getDesiredTargetGroupAttributes(ctx, resTG)
-	currentAttrs, err := r.getCurrentTargetGroupAttributes(ctx, sdkTG)
-	if err != nil {
-		return err
-	}
+	// NOTE: TargetGroupAttributes API doesn't supported.
+	//       So, we simulate getting current attributes and skip the update.
+	//currentAttrs, err := r.getCurrentTargetGroupAttributes(ctx, sdkTG)
+	//if err != nil {
+	//	return err
+	//}
+	currentAttrs := r.getDesiredTargetGroupAttributes(ctx, resTG)
 
 	attributesToUpdate, _ := algorithm.DiffStringMap(desiredAttrs, currentAttrs)
 	if len(attributesToUpdate) > 0 {
