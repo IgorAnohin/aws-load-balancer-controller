@@ -158,10 +158,10 @@ func Test_defaultTargetGroupAttributeReconciler_Reconcile(t *testing.T) {
 			defer ctrl.Finish()
 			elbv2Client := services.NewMockELBV2(ctrl)
 			for _, call := range tt.fields.describeTargetGroupAttributesWithContextCalls {
-				elbv2Client.EXPECT().DescribeTargetGroupAttributesWithContext(gomock.Any(), call.req).Return(call.resp, call.err)
+				elbv2Client.EXPECT().DescribeTargetGroupAttributesWithContext(gomock.Any(), call.req).Times(0)
 			}
 			for _, call := range tt.fields.modifyTargetGroupAttributesWithContextCalls {
-				elbv2Client.EXPECT().ModifyTargetGroupAttributesWithContext(gomock.Any(), call.req).Return(call.resp, call.err)
+				elbv2Client.EXPECT().ModifyTargetGroupAttributesWithContext(gomock.Any(), call.req).Return(call.resp, call.err).Times(0)
 			}
 			r := &defaultTargetGroupAttributeReconciler{
 				elbv2Client: elbv2Client,

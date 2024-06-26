@@ -201,6 +201,10 @@ func (r *defaultSubnetsResolver) ResolveViaSelector(ctx context.Context, selecto
 
 		targetTagKeys := []string{}
 		for key, values := range selector.Tags {
+			if key == TagKeySubnetInternalELB || key == TagKeySubnetPublicELB {
+				// NOTE: Additional Tags should be added to K8S Subnets. Quick Fix possible
+				continue
+			}
 			targetTagKeys = append(targetTagKeys, key)
 			req.Filters = append(req.Filters, &ec2sdk.Filter{
 				Name:   awssdk.String("tag:" + key),

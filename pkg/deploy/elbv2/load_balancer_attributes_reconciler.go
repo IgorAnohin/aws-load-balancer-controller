@@ -35,10 +35,14 @@ type defaultLoadBalancerAttributeReconciler struct {
 
 func (r *defaultLoadBalancerAttributeReconciler) Reconcile(ctx context.Context, resLB *elbv2model.LoadBalancer, sdkLB LoadBalancerWithTags) error {
 	desiredAttrs := r.getDesiredLoadBalancerAttributes(ctx, resLB)
-	currentAttrs, err := r.getCurrentLoadBalancerAttributes(ctx, sdkLB)
-	if err != nil {
-		return err
-	}
+
+	// NOTE: LoadBalancerAttributes API doesn't supported.
+	//       So, we simulate getting current attributes and skip the update.
+	//currentAttrs, err := r.getCurrentLoadBalancerAttributes(ctx, sdkLB)
+	//if err != nil {
+	//	return err
+	//}
+	currentAttrs := r.getDesiredLoadBalancerAttributes(ctx, resLB)
 
 	attributesToUpdate, _ := algorithm.DiffStringMap(desiredAttrs, currentAttrs)
 	if len(attributesToUpdate) > 0 {

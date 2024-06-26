@@ -8,6 +8,7 @@ import (
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/aws/services"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/model/core"
 	elbv2model "sigs.k8s.io/aws-load-balancer-controller/pkg/model/elbv2"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
 )
 
@@ -48,9 +49,11 @@ func (s *listenerRuleSynthesizer) Synthesize(ctx context.Context) error {
 			return err
 		}
 		resLRs := resLRsByLSARN[lsARN]
-		if err := s.synthesizeListenerRulesOnListener(ctx, lsARN, resLRs); err != nil {
-			return err
-		}
+		ctrl.Log.Info("synthesizeListenerRulesOnListener", "resLS", resLS, "resLRs", resLRs)
+		// NOTE: Listener Rule API doesnt supported
+		//if err := s.synthesizeListenerRulesOnListener(ctx, lsARN, resLRs); err != nil {
+		//	return err
+		//}
 	}
 	return nil
 }

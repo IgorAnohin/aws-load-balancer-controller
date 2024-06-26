@@ -87,13 +87,28 @@ func (p *defaultAZInfoProvider) saveAZInfosToCache(azInfoByAZID map[string]ec2sd
 // fetchAZInfosFromAWS will fetch AZ info from AWS API.
 // the availabilityZoneIDs shouldn't be empty.
 func (p *defaultAZInfoProvider) fetchAZInfosFromAWS(ctx context.Context, availabilityZoneIDs []string) (map[string]ec2sdk.AvailabilityZone, error) {
-	req := &ec2sdk.DescribeAvailabilityZonesInput{
-		ZoneIds: awssdk.StringSlice(availabilityZoneIDs),
+	//req := &ec2sdk.DescribeAvailabilityZonesInput{
+	//	ZoneIds: awssdk.StringSlice(availabilityZoneIDs),
+	//}
+	//resp, err := p.ec2Client.DescribeAvailabilityZonesWithContext(ctx, req)
+	//
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	// Fill ZoneType of each available zone manually, because DescribeAvailabilityZones method is not supported
+	// and only "availability-zone" ZoneType available
+	availabilityZones := make([]*ec2sdk.AvailabilityZone, len(availabilityZoneIDs))
+	for index, azID := range availabilityZoneIDs {
+		availabilityZones[index] = &ec2sdk.AvailabilityZone{
+			ZoneId:   awssdk.String(azID),
+			ZoneType: awssdk.String("availability-zone"),
+		}
 	}
-	resp, err := p.ec2Client.DescribeAvailabilityZonesWithContext(ctx, req)
-	if err != nil {
-		return nil, err
+	resp := ec2sdk.DescribeAvailabilityZonesOutput{
+		AvailabilityZones: availabilityZones,
 	}
+
 	azInfoByAZID := make(map[string]ec2sdk.AvailabilityZone)
 	for _, azInfo := range resp.AvailabilityZones {
 		azInfoByAZID[awssdk.StringValue(azInfo.ZoneId)] = *azInfo

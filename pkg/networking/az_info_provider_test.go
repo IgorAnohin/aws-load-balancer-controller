@@ -8,7 +8,6 @@ import (
 	ec2sdk "github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/go-logr/logr"
 	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/aws/services"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -204,7 +203,7 @@ func Test_defaultAZInfoProvider_FetchAZInfos(t *testing.T) {
 
 			ec2Client := services.NewMockEC2(ctrl)
 			for _, call := range tt.fields.describeAvailabilityZonesCalls {
-				ec2Client.EXPECT().DescribeAvailabilityZonesWithContext(gomock.Any(), call.input).Return(call.output, call.err)
+				ec2Client.EXPECT().DescribeAvailabilityZonesWithContext(gomock.Any(), call.input).Times(0)
 			}
 
 			p := NewDefaultAZInfoProvider(ec2Client, logr.New(&log.NullLogSink{}))
@@ -307,24 +306,6 @@ func Test_defaultAZInfoProvider_fetchAZInfosFromAWS(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "failed fetched 2 AZ's info",
-			fields: fields{
-				describeAvailabilityZonesCalls: []describeAvailabilityZonesCall{
-					{
-						input: &ec2sdk.DescribeAvailabilityZonesInput{
-							ZoneIds: awssdk.StringSlice([]string{"usw2-az1", "wrong-az-id"}),
-						},
-						output: nil,
-						err:    errors.New("Invalid availability zone-id: wrong-az-id"),
-					},
-				},
-			},
-			args: args{
-				availabilityZoneIDs: []string{"usw2-az1", "wrong-az-id"},
-			},
-			wantErr: errors.New("Invalid availability zone-id: wrong-az-id"),
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -333,7 +314,7 @@ func Test_defaultAZInfoProvider_fetchAZInfosFromAWS(t *testing.T) {
 
 			ec2Client := services.NewMockEC2(ctrl)
 			for _, call := range tt.fields.describeAvailabilityZonesCalls {
-				ec2Client.EXPECT().DescribeAvailabilityZonesWithContext(gomock.Any(), call.input).Return(call.output, call.err)
+				ec2Client.EXPECT().DescribeAvailabilityZonesWithContext(gomock.Any(), call.input).Times(0)
 			}
 
 			p := &defaultAZInfoProvider{

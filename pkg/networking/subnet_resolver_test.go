@@ -61,10 +61,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: []*ec2sdk.Subnet{
@@ -137,10 +133,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 								{
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
-								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
 								},
 							},
 						},
@@ -215,10 +207,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: nil,
@@ -231,7 +219,7 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 					WithSubnetsResolveLBScheme(elbv2model.LoadBalancerSchemeInternal),
 				},
 			},
-			wantErr: errors.New("unable to resolve at least one subnet (0 match VPC and tags: [kubernetes.io/role/internal-elb])"),
+			wantErr: errors.New("unable to resolve at least one subnet (0 match VPC and tags: [])"),
 		},
 		{
 			name: "ALB with no matching subnets (internet-facing)",
@@ -246,10 +234,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: nil,
@@ -262,7 +246,7 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 					WithSubnetsResolveLBScheme(elbv2model.LoadBalancerSchemeInternetFacing),
 				},
 			},
-			wantErr: errors.New("unable to resolve at least one subnet (0 match VPC and tags: [kubernetes.io/role/elb])"),
+			wantErr: errors.New("unable to resolve at least one subnet (0 match VPC and tags: [])"),
 		},
 		{
 			name: "NLB with one matching subnet",
@@ -276,10 +260,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 								{
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
-								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
 								},
 							},
 						},
@@ -333,10 +313,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: []*ec2sdk.Subnet{
@@ -381,10 +357,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 								{
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
-								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
 								},
 							},
 						},
@@ -438,10 +410,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: []*ec2sdk.Subnet{
@@ -484,10 +452,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 								{
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
-								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
 								},
 							},
 						},
@@ -574,10 +538,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: []*ec2sdk.Subnet{
@@ -630,10 +590,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/internal-elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						err: errors.New("some error"),
@@ -660,10 +616,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 								{
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
-								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
 								},
 							},
 						},
@@ -734,10 +686,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 								{
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
-								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
 								},
 							},
 						},
@@ -861,10 +809,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: []*ec2sdk.Subnet{
@@ -975,10 +919,6 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
 							},
 						},
 						output: []*ec2sdk.Subnet{
@@ -1051,10 +991,10 @@ func Test_defaultSubnetsResolver_ResolveViaDiscovery(t *testing.T) {
 									Name:   awssdk.String("vpc-id"),
 									Values: awssdk.StringSlice([]string{"vpc-1"}),
 								},
-								{
-									Name:   awssdk.String("tag:kubernetes.io/role/elb"),
-									Values: awssdk.StringSlice([]string{"", "1"}),
-								},
+								//{
+								//	Name:   awssdk.String("tag:kubernetes.io/role/elb"),
+								//	Values: awssdk.StringSlice([]string{"", "1"}),
+								//},
 							},
 						},
 						output: []*ec2sdk.Subnet{

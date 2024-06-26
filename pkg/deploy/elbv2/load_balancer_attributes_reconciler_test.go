@@ -158,10 +158,10 @@ func Test_defaultLoadBalancerAttributeReconciler_updateSDKLoadBalancerWithAttrib
 			defer ctrl.Finish()
 			elbv2Client := services.NewMockELBV2(ctrl)
 			for _, call := range tt.fields.describeLoadBalancerAttributesWithContextCalls {
-				elbv2Client.EXPECT().DescribeLoadBalancerAttributesWithContext(gomock.Any(), call.req).Return(call.resp, call.err)
+				elbv2Client.EXPECT().DescribeLoadBalancerAttributesWithContext(gomock.Any(), call.req).Return(call.resp, call.err).Times(0)
 			}
 			for _, call := range tt.fields.modifyLoadBalancerAttributesWithContextCalls {
-				elbv2Client.EXPECT().ModifyLoadBalancerAttributesWithContext(gomock.Any(), call.req).Return(call.resp, call.err)
+				elbv2Client.EXPECT().ModifyLoadBalancerAttributesWithContext(gomock.Any(), call.req).Times(0)
 			}
 			r := &defaultLoadBalancerAttributeReconciler{
 				elbv2Client: elbv2Client,

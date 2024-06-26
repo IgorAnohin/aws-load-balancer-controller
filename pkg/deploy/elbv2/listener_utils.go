@@ -20,12 +20,13 @@ func buildSDKActions(modelActions []elbv2model.Action, featureGates config.Featu
 	var sdkActions []*elbv2sdk.Action
 	if len(modelActions) != 0 {
 		sdkActions = make([]*elbv2sdk.Action, 0, len(modelActions))
-		for index, modelAction := range modelActions {
+		for _, modelAction := range modelActions {
 			sdkAction, err := buildSDKAction(modelAction, featureGates)
 			if err != nil {
 				return nil, err
 			}
-			sdkAction.Order = awssdk.Int64(int64(index) + 1)
+			// NOTE: Order attribute unexpected for Croc Cloud. Quick fix might be applied.
+			//sdkAction.Order = awssdk.Int64(int64(index) + 1)
 			sdkActions = append(sdkActions, sdkAction)
 		}
 	}
