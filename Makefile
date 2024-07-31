@@ -2,13 +2,13 @@
 MAKEFILE_PATH = $(dir $(realpath -s $(firstword $(MAKEFILE_LIST))))
 
 # Image URL to use all building/pushing image targets
-IMG ?= public.ecr.aws/eks/aws-load-balancer-controller:v2.7.0
+IMG ?= registry.cloud.croc.ru/kaas/aws-load-balancer-controller:v2.7.0
 # Image URL to use for builder stage in Docker build
 GOLANG_VERSION ?= $(shell cat .go-version)
 BUILD_IMAGE ?= public.ecr.aws/docker/library/golang:$(GOLANG_VERSION)
 # Image URL to use for base layer in Docker build
 BASE_IMAGE ?= public.ecr.aws/eks-distro-build-tooling/eks-distro-minimal-base-nonroot:2023-09-06-1694026927.2
-IMG_PLATFORM ?= linux/amd64,linux/arm64
+IMG_PLATFORM ?= linux/amd64
 # ECR doesn't appear to support SPDX SBOM
 IMG_SBOM ?= none
 
@@ -54,6 +54,11 @@ uninstall: manifests
 deploy: manifests
 	cd config/controller && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+# Create k_bundle with manifests
+create-bundle:
+	cd config/controller && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default > config/k_bundle.yaml
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen kustomize
@@ -196,6 +201,21 @@ verify-versions:
 
 unit-test:
 	./scripts/ci_unit_test.sh
+
+docker-build-unit-test:
+	docker buildx build . \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
+		--build-arg BUILD_IMAGE=$(BUILD_IMAGE) \
+		--tag $(IMG)-unit-test \
+		--platform ${IMG_PLATFORM} \
+		--target=linux-unit-test \
+
+# Run the unit-test using docker
+docker-run-unit-test:
+	docker run --rm -it \
+		--platform=${IMG_PLATFORM} \
+		--mount type=bind,source=./,target=/local-code \
+		$(IMG)-unit-test
 
 e2e-test:
 	./scripts/ci_e2e_test.sh

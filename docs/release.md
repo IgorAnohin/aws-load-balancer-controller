@@ -1,17 +1,36 @@
 # AWS Load Balancer Controller Release Process
 
-## Create the Release Commit
+# Инструкция по релизу новой версии
 
-Run `hack/set-version` to set the new version number and commit the resulting changes. 
-This is called the "release commit".
+## Версионирование
 
-## Merge the Release Commit
+Используется следующая схема версионирования - <upstream_version>-ROCKIT<X>. Где X - инкрементируется с каждым новым релизом. Например при текущей версии апстрима v0.5.0 и текущей версии этой репы v0.5.0-ROCKIT1 следующая версия будет v0.5.0-ROCKIT2. При обновлении версии апстрима, например до v0.6.0, успешный ребейз на новый апстрим будет результирован в версию v0.6.0-ROCKIT2. Предполагается суппорт только актуальных версий.
 
-Create a pull request with the release commit. Get it reviewed and merged to `main`.
+Версии обозначаются гит тегами. Тегируется main ветка используя механизм релизов гитхаба. При создании нового релиза, описание релиза заполняется краткой сводкой изменений в новом релизе. После создания нового релиза (и тега), тег забирается на локалку (git pull upstream main --tags) и выполняется ручная сборка и публикация артефактов.
 
-Upon merge to `main`, GitHub Actions will create a release tag for the new release.
+## Пререквизиты
 
-If the release is a ".0-beta.1" release, GitHub Actions will also create a release branch
-for the minor version.
+В системе должны быть установлены следующие компоненты:
+- `docker(c buildx)`
+- [`kustomize`](https://github.com/kubernetes-sigs/kustomize)
 
-(Remaining steps in process yet to be documented.)
+## Подготовка
+
+Перед началом сборки артефактов необходимо обновить версию приложения в переменной `IMG` в `Makefile`
+Запустить юнит тесты, инструкция находится в `docs/test.md`
+
+## Артефакты
+
+Релизными артефактами этой репы является докер имадж и deployment конфиги для kubernetes. При любом новом релизе необходимо обновлять kustomization.yaml и генерить бандл:
+- make-target create-bundle обновит kustomization и соберет бандл по пути config/k_bundle.yaml 
+```
+make create-bundle
+```
+
+### Сборка образа
+
+Выполнить make-target docker-push-w-buildx для построения и пуша образа в docker registry.
+```
+make docker-push-w-buildx
+```
+

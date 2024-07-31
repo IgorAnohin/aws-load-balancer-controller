@@ -35,3 +35,9 @@ FROM bin-unix AS bin-linux
 FROM bin-unix AS bin-darwin
 
 FROM bin-${TARGETOS} as bin
+
+FROM --platform=${TARGETPLATFORM} $BUILD_IMAGE AS linux-unit-test
+
+VOLUME /local-code
+
+CMD cd /local-code && make unit-test
