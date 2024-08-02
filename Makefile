@@ -1,8 +1,13 @@
 
 MAKEFILE_PATH = $(dir $(realpath -s $(firstword $(MAKEFILE_LIST))))
 
+VERSION ?= v2.7.0-ROCKIT1
+REGISTRY ?= registry.cloud.croc.ru/kaas
+RELEASE_REGISTRIES? = $(REGISTRY)
+IMAGE_NAME ?= aws-load-balancer-controller
+
 # Image URL to use all building/pushing image targets
-IMG ?= registry.cloud.croc.ru/kaas/aws-load-balancer-controller:v2.7.0
+IMG? = $(REGISTRY)/$(IMAGE_NAME):$(VERSION)
 # Image URL to use for builder stage in Docker build
 GOLANG_VERSION ?= $(shell cat .go-version)
 BUILD_IMAGE ?= public.ecr.aws/docker/library/golang:$(GOLANG_VERSION)
@@ -104,10 +109,18 @@ aws-load-balancer-controller-push: ko
     BUILD_DATE=$(shell date +%Y-%m-%dT%H:%M:%S%z) \
     ko build --tags $(word 2,$(subst :, ,${IMG})) --platform=${IMG_PLATFORM} --bare --sbom ${IMG_SBOM} .
 
+# Build the docker image using docker buildx
+docker-build-w-buildx:
+	docker buildx build . --target bin \
+        		--tag $(IMG) \
+				--build-arg BASE_IMAGE=$(BASE_IMAGE) \
+				--build-arg BUILD_IMAGE=$(BUILD_IMAGE) \
+        		--platform ${IMG_PLATFORM}
+
 # Push the docker image using docker buildx
 docker-push-w-buildx:
 	docker buildx build . --target bin \
-        		--tag $(IMG) \
+				$(foreach repo, $(RELEASE_REGISTRIES), -t=$(repo)/$(IMAGE_NAME):$(VERSION)) \
 				--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 				--build-arg BUILD_IMAGE=$(BUILD_IMAGE) \
 				--push \

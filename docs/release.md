@@ -16,7 +16,7 @@
 
 ## Подготовка
 
-Перед началом сборки артефактов необходимо обновить версию приложения в переменной `IMG` в `Makefile`
+Перед началом сборки артефактов необходимо обновить версию приложения в переменной `VERSION` в `Makefile`
 Запустить юнит тесты, инструкция находится в `docs/test.md`
 
 ## Артефакты
@@ -29,8 +29,15 @@ make create-bundle
 
 ### Сборка образа
 
-Выполнить make-target docker-push-w-buildx для построения и пуша образа в docker registry.
+Выполнить make-target docker-build-w-buildx для построения образа в docker registry.
 ```
-make docker-push-w-buildx
+make docker-build-w-buildx
 ```
 
+### Релиз образа
+Для релиза образа необходимо:
+- Установить переменную окружения `RELEASE_REGISTRIES` со значением в виде списка репозиториев в формате `<registry-1> <registry-2> ...`
+- Выполнить make-target docker-push-w-buildx для построения и пуша образа в docker registry.
+```
+make docker-push-w-buildx RELEASE_REGISTRIES="<registry-1> <registry-2> ..."
+```
