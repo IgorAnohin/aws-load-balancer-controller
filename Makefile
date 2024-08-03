@@ -1,13 +1,13 @@
 
 MAKEFILE_PATH = $(dir $(realpath -s $(firstword $(MAKEFILE_LIST))))
 
-VERSION ?= v2.7.0-ROCKIT1
-REGISTRY ?= registry.cloud.croc.ru/kaas
-RELEASE_REGISTRIES? = $(REGISTRY)
+VERSION ?= v2.7.0-TEST
+REGISTRY ?= registry.cloud.croc.ru/achernev
+RELEASE_REGISTRIES ?= $(REGISTRY)
 IMAGE_NAME ?= aws-load-balancer-controller
 
 # Image URL to use all building/pushing image targets
-IMG? = $(REGISTRY)/$(IMAGE_NAME):$(VERSION)
+IMG ?= $(REGISTRY)/$(IMAGE_NAME):$(VERSION)
 # Image URL to use for builder stage in Docker build
 GOLANG_VERSION ?= $(shell cat .go-version)
 BUILD_IMAGE ?= public.ecr.aws/docker/library/golang:$(GOLANG_VERSION)
@@ -221,7 +221,15 @@ docker-build-unit-test:
 		--build-arg BUILD_IMAGE=$(BUILD_IMAGE) \
 		--tag $(IMG)-unit-test \
 		--platform ${IMG_PLATFORM} \
-		--target=linux-unit-test \
+		--target=linux-unit-test
+
+docker-build-e2e-test:
+	docker buildx build . \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
+		--build-arg BUILD_IMAGE=$(BUILD_IMAGE) \
+		--tag $(IMG)-e2e-test \
+		--platform ${IMG_PLATFORM} \
+		--target=linux-e2e-test
 
 # Run the unit-test using docker
 docker-run-unit-test:
