@@ -45,7 +45,7 @@ VOLUME /local-code
 
 CMD cd /local-code && make unit-test
 
-FROM build AS linux-e2e-test
+FROM golang:1.22.3 AS linux-e2e-test
 
 COPY --from=build /out/service.test /service.test
 COPY --from=build /out/ingress.test /ingress.test
