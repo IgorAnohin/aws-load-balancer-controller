@@ -232,7 +232,7 @@ docker-build-e2e-test:
 		--target=linux-e2e-test
 
 # Run the unit-test using docker
-docker-run-unit-test:
+docker-run-unit-test: docker-build-unit-test
 	docker run --rm -it \
 		--platform=${IMG_PLATFORM} \
 		--mount type=bind,source=./,target=/local-code \
