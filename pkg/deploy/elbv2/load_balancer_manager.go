@@ -98,10 +98,9 @@ func (m *defaultLoadBalancerManager) Update(ctx context.Context, resLB *elbv2mod
 	if err := m.updateSDKLoadBalancerWithIPAddressType(ctx, resLB, sdkLB); err != nil {
 		return elbv2model.LoadBalancerStatus{}, err
 	}
-	// NOTE: LoadBalancerAttributes API doesnt support by CROC Cloud
-	//if err := m.attributesReconciler.Reconcile(ctx, resLB, sdkLB); err != nil {
-	//	return elbv2model.LoadBalancerStatus{}, err
-	//}
+	if err := m.attributesReconciler.Reconcile(ctx, resLB, sdkLB); err != nil {
+		return elbv2model.LoadBalancerStatus{}, err
+	}
 	if err := m.checkSDKLoadBalancerWithCOIPv4Pool(ctx, resLB, sdkLB); err != nil {
 		return elbv2model.LoadBalancerStatus{}, err
 	}
