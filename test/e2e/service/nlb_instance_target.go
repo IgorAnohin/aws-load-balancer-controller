@@ -131,7 +131,7 @@ func (s *NLBInstanceTestStack) buildServiceSpec(ctx context.Context, annotations
 			Name: defaultName,
 			Annotations: map[string]string{
 				"service.beta.kubernetes.io/aws-load-balancer-type":            "external",
-				"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "ip",
+				"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance",
 				"service.beta.kubernetes.io/aws-load-balancer-scheme":          "internet-facing",
 			},
 		},

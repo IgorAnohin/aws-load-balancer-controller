@@ -57,9 +57,19 @@ func InitFramework() (*Framework, error) {
 
 	logger, loggerReporter := utils.NewGinkgoLogger()
 
+	var AWSEndpoints = make(map[string]string)
+	if globalOptions.EC2Endpoint != "" {
+		AWSEndpoints["ec2"] = globalOptions.EC2Endpoint
+	}
+
+	if globalOptions.ELBEndpoint != "" {
+		AWSEndpoints["elasticloadbalancing"] = globalOptions.ELBEndpoint
+	}
+
 	cloud, err := aws.NewCloud(aws.CloudConfig{
 		Region:         globalOptions.AWSRegion,
 		VpcID:          globalOptions.AWSVPCID,
+		AWSEndpoints:   AWSEndpoints,
 		MaxRetries:     3,
 		ThrottleConfig: throttle.NewDefaultServiceOperationsThrottleConfig(),
 	}, nil, logger)
