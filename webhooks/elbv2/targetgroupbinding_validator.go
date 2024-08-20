@@ -168,7 +168,7 @@ func (v *targetGroupBindingValidator) checkTargetGroupVpcID(ctx context.Context,
 	if tgb.Spec.VpcID == "" {
 		return nil
 	}
-	if !vpcIDPatternRegex.MatchString(tgb.Spec.VpcID) {
+	if !vpcIDPatternRegex.MatchString(strings.ToLower(tgb.Spec.VpcID)) {
 		return errors.Errorf("ValidationError: vpcID %v failed to satisfy constraint: VPC Id must begin with 'vpc-' followed by 8 or 17 lowercase letters (a-f) or numbers.", tgb.Spec.VpcID)
 	}
 	vpcID, err := v.getVpcIDFromAWS(ctx, tgb.Spec.TargetGroupARN)
