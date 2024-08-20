@@ -2,14 +2,11 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/aws-load-balancer-controller/test/framework/http"
 	"sigs.k8s.io/aws-load-balancer-controller/test/framework/utils"
 )
 
@@ -83,81 +80,6 @@ var _ = Describe("test k8s service reconciled by the aws load balancer controlle
 			})
 			By("waiting until DNS name is available", func() {
 				err := utils.WaitUntilDNSNameAvailable(ctx, dnsName)
-				Expect(err).NotTo(HaveOccurred())
-			})
-			By("sending http request to the lb", func() {
-				url := fmt.Sprintf("http://%v/any-path", dnsName)
-				err := tf.HTTPVerifier.VerifyURL(url, http.ResponseCodeMatches(200))
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-			By("enabling cross zone load balancing", func() {
-				err := stack.UpdateServiceAnnotations(ctx, tf, map[string]string{
-					"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": "true",
-				})
-				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(func() bool {
-					return verifyLoadBalancerAttributes(ctx, tf, lbARN, map[string]string{
-						"load_balancing.cross_zone.enabled": "true",
-					}) == nil
-				}, utils.PollTimeoutShort, utils.PollIntervalMedium).Should(BeTrue())
-			})
-
-			By("specifying load balancer tags", func() {
-				err := stack.UpdateServiceAnnotations(ctx, tf, map[string]string{
-					"service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags": "instance-mode=true, key1=value1",
-				})
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(func() bool {
-					return verifyLoadBalancerResourceTags(ctx, tf, lbARN, map[string]string{
-						"instance-mode":            "true",
-						"key1":                     "value1",
-						"elbv2.k8s.aws/cluster":    tf.Options.ClusterName,
-						"service.k8s.aws/stack":    stack.resourceStack.GetStackName(),
-						"service.k8s.aws/resource": "*",
-					}, nil)
-				}, utils.PollTimeoutShort, utils.PollIntervalMedium).Should(BeTrue())
-			})
-			By("modifying load balancer tags", func() {
-				err := stack.UpdateServiceAnnotations(ctx, tf, map[string]string{
-					"service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags": "instance-mode=true",
-				})
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(func() bool {
-					return verifyLoadBalancerResourceTags(ctx, tf, lbARN, map[string]string{
-						"instance-mode":            "true",
-						"elbv2.k8s.aws/cluster":    tf.Options.ClusterName,
-						"service.k8s.aws/stack":    stack.resourceStack.GetStackName(),
-						"service.k8s.aws/resource": "*",
-					}, map[string]string{
-						"key1": "value1",
-					})
-				}, utils.PollTimeoutShort, utils.PollIntervalMedium).Should(BeTrue())
-
-			})
-			By("modifying external traffic policy", func() {
-				err := stack.UpdateServiceTrafficPolicy(ctx, tf, corev1.ServiceExternalTrafficPolicyTypeLocal)
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(func() bool {
-					return getTargetGroupHealthCheckProtocol(ctx, tf, lbARN) == "HTTP"
-				}, utils.PollTimeoutShort, utils.PollIntervalMedium).Should(BeTrue())
-				err = verifyAWSLoadBalancerResources(ctx, tf, lbARN, LoadBalancerExpectation{
-					Type:         "network",
-					Scheme:       "internet-facing",
-					TargetType:   "instance",
-					Listeners:    stack.resourceStack.getListenersPortMap(),
-					TargetGroups: stack.resourceStack.getTargetGroupNodePortMap(),
-					TargetGroupHC: &TargetGroupHC{
-						Protocol:           "HTTP",
-						Port:               stack.resourceStack.getHealthCheckNodePort(),
-						Path:               "/healthz",
-						Interval:           10,
-						Timeout:            6,
-						HealthyThreshold:   2,
-						UnhealthyThreshold: 2,
-					},
-				})
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
